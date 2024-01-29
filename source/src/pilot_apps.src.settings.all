@@ -965,6 +965,9 @@ sources = {
 	"pilot/tseng" : [
 		#"tseng_minimize", # /* ????,Documentation Location,Demo Location */
 	],
+	"pilot/tydingcw" : [
+		"bootcamp", # testing
+	],
 
 	# U ######################################################################
 
