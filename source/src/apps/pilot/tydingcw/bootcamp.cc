@@ -11,6 +11,13 @@
 #include <basic/options/keys/in.OptionKeys.gen.hh>
 #include <devel/init.hh>
 #include <basic/options/option.hh>
+#include <utility/pointer/owning_ptr.hh>
+#include <core/pose/Pose.hh>
+#include <core/import_pose/import_pose.hh>
+#include <core/scoring/ScoreFunction.fwd.hh>
+#include <core/scoring/ScoreFunctionFactory.hh>
+#include <core/scoring/ScoreFunction.hh>
+#include <numeric/random.hh>
 
 int main( int argc, char ** argv ) {
 	std::cout << "Hello World!" << std::endl;
@@ -24,6 +31,10 @@ int main( int argc, char ** argv ) {
 		return 1;
 	}
 
+	core::pose::PoseOP mypose = core::import_pose::pose_from_file( filenames[1] );
+	core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
+	core::Real score = sfxn->score( *mypose );
+	std::cout << score << std::endl;
 	return 0;
 }
 
