@@ -22,9 +22,12 @@
 #include <test/core/init_util.hh>
 
 // Utility headers
+#include <core/kinematics/FoldTree.hh>
 
 /// Project headers
 //#include <core/types.hh>
+#include <core/scoring/dssp/Dssp.hh>
+#include <protocols/moves/DsspMover.hh>
 
 // C++ headers
 #include <utility/vector1.hh>
@@ -85,6 +88,72 @@ public:
         return ss_boundaries;
     }
 
+    core::kinematics::FoldTree fold_tree_from_dssp_string(
+            std::string input_string
+            //utility::vector1< std::pair< core::Size, core::Size > > &input_vect
+    ) {
+        auto input_vect = identify_secondary_structure_spans(input_string);
+
+        core::kinematics::FoldTree ft;
+        core::Size edges = 4*(input_vect.size()-2);
+        core::Size jumps = 2*(input_vect.size()-2);
+
+        //Making the start
+        std::pair< core::Size, core::Size > node1 = input_vect[1];
+        core::Size center = (node1.first + node1.second)/2;
+        ft.add_edge( center, 1, core::kinematics::Edge::PEPTIDE );
+        ft.add_edge( center, node1.second, core::kinematics::Edge::PEPTIDE );
+
+        core::Size count = 0;
+        //Creating the foldtree for given SS and previous loop
+        for (size_t i = 1; i <= input_vect.size(); i++){
+            //assuming loop size 3+ between SS elements
+            std::pair< core::Size, core::Size > node_i = input_vect[i];
+            core::Size center_i = (node_i.first + node_i.second)/2;
+
+            std::pair< core::Size, core::Size > node_prev = input_vect[i-1];
+            core::Size loop_start = node_prev.second + 1; //prev node is SS, need loop
+            core::Size loop_end = node_i.first -1;
+            core::Size loop_center = (loop_start + loop_end)/2;
+
+            ft.add_edge( center, loop_center, i );
+            ft.add_edge( loop_center, loop_start, core::kinematics::Edge::PEPTIDE );
+            ft.add_edge( loop_center, loop_end, core::kinematics::Edge::PEPTIDE );
+
+            ft.add_edge( center, center_i, i );
+            ft.add_edge( center_i, node_i.first, core::kinematics::Edge::PEPTIDE );
+            ft.add_edge( center_i, node_i.second, core::kinematics::Edge::PEPTIDE );
+
+            count = count +2;
+        }
+
+        //Making the end
+        std::pair< core::Size, core::Size > node_end = input_vect[input_vect.size()];
+
+        std::pair< core::Size, core::Size > node_prev = input_vect[input_vect.size()-1];
+        core::Size loop_start = node_prev.second + 1; //prev node is SS, need loop
+        core::Size loop_end = node_end.first -1;
+        core::Size loop_center = (loop_start + loop_end)/2;
+
+        ft.add_edge( center, loop_center, count+1 );
+        ft.add_edge( loop_center, loop_start, core::kinematics::Edge::PEPTIDE );
+        ft.add_edge( loop_center, loop_end, core::kinematics::Edge::PEPTIDE );
+
+        core::Size center_end = (node_end.first + node_end.second)/2;
+        ft.add_edge( center, center_end, count+2 );
+        ft.add_edge( center_end, node_end.first, core::kinematics::Edge::PEPTIDE );
+        //Need to get last element
+        ft.add_edge( center_end, input_string.size(), core::kinematics::Edge::PEPTIDE );
+    }
+
+    core::kinematics::FoldTree fold_tree_from_ss(core::pose::Pose & pose) {
+        core::scoring::dssp::Dssp dssp_struct = core::scoring::dssp::Dssp(pose);
+        //core::scoring::dssp::Dssp dssp_mem = core::scoring::dssp::Dssp();
+        std::string input_string = dssp_struct.get_dssp_secstruct();
+        return fold_tree_from_dssp_string(input_string);
+    }
+
+
 
     // Shared initialization goes here.
 	void setUp() {
@@ -105,9 +174,57 @@ public:
         TS_ASSERT( identify_secondary_structure_spans( "" ).size() == 0 );
     }
 
-    //void test_identify_secondary_structure_spans() {
+    void test1_identify_secondary_structure_spans() {
         //7 secondary structure elements, spanning residues
         // 4 to 8, 12 to 19, 22 to 26, 36 to 41, 45 to 55, 58 to 62, and 65 to 68
-    //    std::string test_1 = "   EEEEE   HHHHHHHH  EEEEE   IGNOR EEEEEE   HHHHHHHHHHH  EEEEE  HHHH   ";
-    //}
+        std::string test_1 = "   EEEEE   HHHHHHHH  EEEEE   IGNOR EEEEEE   HHHHHHHHHHH  EEEEE  HHHH   ";
+        auto output_1 = identify_secondary_structure_spans( test_1 );
+        utility::vector1< std::pair< core::Size, core::Size > > result_1 = {
+                {4,8},
+                {12,19},
+                {22, 26},
+                {36, 41},
+                {45,55},
+                {58,62},
+                {65, 68}
+        };
+        TS_ASSERT( output_1 == result_1 );
+    }
+
+    void test2_identify_secondary_structure_spans() {
+        //7 secondary structure elements, spanning residues
+        // 4 to 8, 12 to 19, 22 to 26, 36 to 41, 45 to 55, 58 to 62, and 65 to 68
+        std::string test_1 = "HHHHHHH   HHHHHHHHHHHH      HHHHHHHHHHHHEEEEEEEEEEHHHHHHH EEEEHHH ";
+        auto output_1 = identify_secondary_structure_spans( test_1 );
+        utility::vector1< std::pair< core::Size, core::Size > > result_1 = {
+                {1,  7},
+                {11, 22},
+                {29, 40},
+                {41, 50},
+                {51, 57},
+                {59, 62},
+                {63, 65}
+        };
+        TS_ASSERT( output_1 == result_1 );
+    }
+
+    void test3_identify_secondary_structure_spans() {
+        //7 secondary structure elements, spanning residues
+        // 4 to 8, 12 to 19, 22 to 26, 36 to 41, 45 to 55, 58 to 62, and 65 to 68
+        std::string test_1 = "EEEEEEEEE EEEEEEEE EEEEEEEEE H EEEEE H H H EEEEEEEE";
+        auto output_1 = identify_secondary_structure_spans( test_1 );
+        utility::vector1< std::pair< core::Size, core::Size > > result_1 = {
+                {1,  9},
+                {11, 18},
+                {20, 28},
+                {30, 30},
+                {32, 36},
+                {38, 38},
+                {40, 40},
+                {42, 42},
+                {44, 51}
+        };
+        TS_ASSERT( output_1 == result_1 );
+    }
+
 };
