@@ -109,6 +109,8 @@ int main( int argc, char ** argv ) {
         }
         score = sfxn->score( *mypose );
         sum_scores += score;
+        //Acceptance Ratio at Step 100: 0.81
+        //Average Score at Step 100: -246.001
         if (i%100 == 0) {
             accept_ratio = accept_count/i;
             std::cout << "Acceptance Ratio at Step " << i << ": " << accept_ratio << std::endl;
