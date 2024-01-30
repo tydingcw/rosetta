@@ -29,6 +29,7 @@
 // C++ headers
 #include <utility/vector1.hh>
 #include <string>
+#include <iostream>
 
 //Auto Headers
 //#include <core/pack/dunbrack/DunbrackRotamer.hh>
@@ -100,4 +101,13 @@ public:
 		TS_ASSERT( true );
 	}
 
+    void test_empty() {
+        TS_ASSERT( identify_secondary_structure_spans( "" ).size() == 0 );
+    }
+
+    //void test_identify_secondary_structure_spans() {
+        //7 secondary structure elements, spanning residues
+        // 4 to 8, 12 to 19, 22 to 26, 36 to 41, 45 to 55, 58 to 62, and 65 to 68
+    //    std::string test_1 = "   EEEEE   HHHHHHHH  EEEEE   IGNOR EEEEEE   HHHHHHHHHHH  EEEEE  HHHH   ";
+    //}
 };
