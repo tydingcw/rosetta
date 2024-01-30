@@ -20,7 +20,7 @@
 #include <test/core/init_util.hh>
 
 // Project Headers
-
+#include <protocols/bootcamp/Queue.hh>
 
 // Core Headers
 #include <core/pose/Pose.hh>
@@ -46,10 +46,17 @@ public:
 
 	}
 
-
+	void test_construct() {
+ 
+	protocols::bootcamp::Queue queue = protocols::bootcamp::Queue();
+	TS_ASSERT( queue.is_empty() );
+ 
+  }
 
 	void test_first() {
 
+		TS_TRACE( "Running my first unit test!" );
+		TS_ASSERT( true );
 
 	}
 
