@@ -46,7 +46,7 @@ int main( int argc, char ** argv ) {
 	core::pose::PoseOP mypose = core::import_pose::pose_from_file( filenames[1] );
 	core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
 	core::Real score = sfxn->score( *mypose );
-	std::cout << score << std::endl;
+	std::cout << "Score: " << score << std::endl;
 
 	core::Size n_resi = mypose->size();
 
@@ -75,28 +75,46 @@ int main( int argc, char ** argv ) {
 
 	core::pose::Pose copy_pose;
 
-	for (int i = 0; i < 100; i++){
+    bool accept;
+    core::Real accept_count = 0;
+    core::Real accept_ratio;
+    core::Real sum_scores = 0.0;
+    core::Real avg_score;
 
-	core::Size randres = n_resi * uni + 1;
-	core::Real pert1 = numeric::random::gaussian();
-	core::Real pert2 = numeric::random::gaussian();
+	for (int i = 1; i <= 100; i++){
 
-	core::Real orig_phi = mypose->phi( randres );
-	core::Real orig_psi = mypose->psi( randres );
-	mypose->set_phi( randres, orig_phi + pert1 );
-	mypose->set_psi( randres, orig_psi + pert2 );
+	    core::Size randres = n_resi * uni + 1;
+	    core::Real pert1 = numeric::random::gaussian();
+	    core::Real pert2 = numeric::random::gaussian();
 
-	core::pack::task::PackerTaskOP repack_task = core::pack::task::TaskFactory::create_packer_task( *mypose );
-	repack_task->restrict_to_repacking();
-	core::pack::pack_rotamers( *mypose, *sfxn, repack_task );
+	    core::Real orig_phi = mypose->phi( randres );
+	    core::Real orig_psi = mypose->psi( randres );
+	    mypose->set_phi( randres, orig_phi + pert1 );
+	    mypose->set_psi( randres, orig_psi + pert2 );
 
-	//atm.run( *mypose, mm, *sfxn, min_opts );
+	    core::pack::task::PackerTaskOP repack_task = core::pack::task::TaskFactory::create_packer_task( *mypose );
+	    repack_task->restrict_to_repacking();
+	    core::pack::pack_rotamers( *mypose, *sfxn, repack_task );
 
-	copy_pose = *mypose;
-	atm.run( copy_pose, mm, *sfxn, min_opts );
-	*mypose = copy_pose;
+	    //atm.run( *mypose, mm, *sfxn, min_opts );
 
-	monte_carlo.boltzmann(*mypose);
+	    copy_pose = *mypose;
+	    atm.run( copy_pose, mm, *sfxn, min_opts );
+	    *mypose = copy_pose;
+
+        //Record Acceptance ratio and score
+	    accept = monte_carlo.boltzmann(*mypose);
+        if (accept) {
+            accept_count++;
+        }
+        score = sfxn->score( *mypose );
+        sum_scores += score;
+        if (i%100 == 0) {
+            accept_ratio = accept_count/i;
+            std::cout << "Acceptance Ratio at Step " << i << ": " << accept_ratio << std::endl;
+            avg_score = sum_scores/i;
+            std::cout << "Average Score at Step " << i << ": " << avg_score << std::endl;
+        }
 		
 	}
 
