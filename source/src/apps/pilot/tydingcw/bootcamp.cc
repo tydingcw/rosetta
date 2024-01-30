@@ -20,6 +20,13 @@
 #include <numeric/random/random.hh>
 #include <protocols/moves/MonteCarlo.hh>
 #include <protocols/moves/PyMOLMover.hh>
+#include <core/pack/task/TaskFactory.hh>
+#include <core/pack/task/PackerTask.hh>
+#include <core/pack/pack_rotamers.hh>
+#include <core/kinematics/MoveMap.hh>
+#include <core/optimization/MinimizerOptions.hh>
+#include <core/optimization/AtomTreeMinimizer.hh>
+#include <core/pose/Pose.hh>
 
 int main( int argc, char ** argv ) {
 
@@ -58,6 +65,16 @@ int main( int argc, char ** argv ) {
 	protocols::moves::PyMOLObserverOP the_observer = protocols::moves::AddPyMOLObserver( *mypose, true, 0 );
 	the_observer->pymol().apply( *mypose);
 
+	core::kinematics::MoveMap mm;
+	mm.set_bb( true );
+	mm.set_chi( true );
+
+	core::optimization::MinimizerOptions min_opts( "lbfgs_armijo_atol", 0.01, true );
+
+	core::optimization::AtomTreeMinimizer atm;
+
+	core::pose::Pose copy_pose;
+
 	for (int i = 0; i < 100; i++){
 
 	core::Size randres = n_resi * uni + 1;
@@ -73,7 +90,12 @@ int main( int argc, char ** argv ) {
 	repack_task->restrict_to_repacking();
 	core::pack::pack_rotamers( *mypose, *sfxn, repack_task );
 
-	
+	//atm.run( *mypose, mm, *sfxn, min_opts );
+
+	copy_pose = *mypose;
+	atm.run( copy_pose, mm, *sfxn, min_opts );
+	*mypose = copy_pose;
+
 	monte_carlo.boltzmann(*mypose);
 		
 	}

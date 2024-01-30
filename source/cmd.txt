@@ -1,0 +1,1 @@
+bin/bootcamp.default.linuxgccrelease -in:file:s 1UBQ.pdb.gz -ignore_unrecognized_res
