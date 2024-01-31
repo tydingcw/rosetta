@@ -87,6 +87,12 @@ public:
 
 	//BootCampMover & operator=( BootCampMover const & src );
 
+    void
+    parse_score_function(
+            TagCOP const tag,
+            basic::datacache::DataMap const & datamap
+    );
+
 	/// @brief required in the context of the parser/scripting scheme
 	protocols::moves::MoverOP
 	fresh_instance() const override;

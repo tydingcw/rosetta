@@ -14,6 +14,7 @@
 // Unit headers
 #include <protocols/bootcamp/BootCampMover.hh>
 #include <protocols/bootcamp/BootCampMoverCreator.hh>
+#include <protocols/rosetta_scripts/util.hh>
 
 // Core headers
 #include <core/pose/Pose.hh>
@@ -80,18 +81,18 @@ BootCampMover::~BootCampMover(){}
 //core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
 void BootCampMover::set_sfxn(core::scoring::ScoreFunctionOP sfxn) {
     sfxn_ = sfxn;
-};
+}
 
 core::scoring::ScoreFunctionOP BootCampMover::get_sfxn() const {
     return sfxn_;
-};
+}
 
 void BootCampMover::set_num_iterations(core::Real num_iterations) {
     num_iterations_ = num_iterations;
-};
+}
 core::Size BootCampMover::get_num_iterations() const{
     return num_iterations_;
-}; //function is const
+} //function is const
 
         /// @brief Apply the mover
 void
@@ -210,11 +211,50 @@ BootCampMover::show(std::ostream & output) const
 /// @brief parse XML tag (to use this Mover in Rosetta Scripts)
 void
 BootCampMover::parse_my_tag(
-	utility::tag::TagCOP ,
-	basic::datacache::DataMap&
+	utility::tag::TagCOP const tag,
+	basic::datacache::DataMap& datamap
 ) {
 
+  if ( tag->hasOption("num_iterations") ) {
+      num_iterations_ = tag->getOption<core::Size>("num_iterations",100);
+      runtime_assert( num_iterations_ > 0 );
+  }
+  parse_score_function( tag, datamap );
+  //parse_task_operations( tag, datamap );
+
 }
+
+/// @brief parse "scorefxn" XML option (can be employed virtually by derived Packing movers)
+void
+BootCampMover::parse_score_function(
+        TagCOP const tag,
+        basic::datacache::DataMap const & datamap
+)
+{
+    core::scoring::ScoreFunctionOP new_score_function( protocols::rosetta_scripts::parse_score_function( tag, datamap ) );
+    if ( new_score_function == nullptr ) return;
+    set_sfxn(new_score_function);
+    //sfxn_( new_score_function );
+}
+
+/// @brief parse "task_operations" XML option (can be employed virtually by derived Packing movers)
+//void
+//BootCampMover::parse_task_operations(
+//        TagCOP const tag,
+//        basic::datacache::DataMap const & datamap
+//)
+//{
+//    core::pack::task::TaskFactoryOP new_task_factory( protocols::rosetta_scripts::parse_task_operations( tag, datamap ) );
+//    if ( new_task_factory == nullptr ) return;
+//    task_factory( new_task_factory );
+//}
+
+//void BootCampMover::task_factory( core::pack::task::TaskFactoryCOP tf )
+//{
+//    runtime_assert( tf != nullptr );
+//    task_factory_ = tf;
+//}
+
 void BootCampMover::provide_xml_schema( utility::tag::XMLSchemaDefinition & xsd )
 {
 
