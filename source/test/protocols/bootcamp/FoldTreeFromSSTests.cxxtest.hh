@@ -204,6 +204,7 @@ public:
         auto my_tree = fold_tree_from_ss( test_pose );
         //std::cout << "Size " << my_tree.size() << std::endl;
         test_pose.fold_tree(my_tree);
+        my_tree.show( std::cout);
         TS_ASSERT( my_tree.check_fold_tree() );
     }
 
