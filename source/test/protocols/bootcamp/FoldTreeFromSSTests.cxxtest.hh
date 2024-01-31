@@ -93,21 +93,26 @@ public:
             //utility::vector1< std::pair< core::Size, core::Size > > &input_vect
     ) {
         auto input_vect = identify_secondary_structure_spans(input_string);
+        std::cout << "New string length " << input_string.size() << std::endl;
+        std::cout << "New vector length " << input_vect.size() << std::endl;
 
         core::kinematics::FoldTree ft;
-        core::Size edges = 4*(input_vect.size()-2);
-        core::Size jumps = 2*(input_vect.size()-2);
+        //core::Size edges = 4*(input_vect.size()-2);
+        //core::Size jumps = 2*(input_vect.size()-2);
 
         //Making the start
         std::pair< core::Size, core::Size > node1 = input_vect[1];
         core::Size center = (node1.first + node1.second)/2;
+        std::cout << "New edge " << center << " " << 1 << std::endl;
+        std::cout << "New edge " << center << " " << node1.second << std::endl;
         ft.add_edge( center, 1, core::kinematics::Edge::PEPTIDE );
         ft.add_edge( center, node1.second, core::kinematics::Edge::PEPTIDE );
 
-        core::Size count = 0;
+        core::Size count = 1;
         //Creating the foldtree for given SS and previous loop
-        for (size_t i = 1; i <= input_vect.size(); i++){
+        for (size_t i = 2; i <= input_vect.size() - 1; i++){
             //assuming loop size 3+ between SS elements
+            std::cout << "starting " << i << std::endl;
             std::pair< core::Size, core::Size > node_i = input_vect[i];
             core::Size center_i = (node_i.first + node_i.second)/2;
 
@@ -116,15 +121,23 @@ public:
             core::Size loop_end = node_i.first -1;
             core::Size loop_center = (loop_start + loop_end)/2;
 
-            ft.add_edge( center, loop_center, i );
+            std::cout << "New jump " << center << " " << loop_center << " " << count << std::endl;
+            std::cout << "New edge " << loop_center << " " << loop_start << std::endl;
+            std::cout << "New edge " << loop_center << " " << loop_end << std::endl;
+            ft.add_edge( center, loop_center, count );
             ft.add_edge( loop_center, loop_start, core::kinematics::Edge::PEPTIDE );
             ft.add_edge( loop_center, loop_end, core::kinematics::Edge::PEPTIDE );
 
-            ft.add_edge( center, center_i, i );
+            count++;
+
+            std::cout << "New jump " << center << " " << center_i << " " << count << std::endl;
+            std::cout << "New edge " << center_i << " " << node_i.first << std::endl;
+            std::cout << "New edge " << center_i << " " << node_i.second << std::endl;
+            ft.add_edge( center, center_i, count );
             ft.add_edge( center_i, node_i.first, core::kinematics::Edge::PEPTIDE );
             ft.add_edge( center_i, node_i.second, core::kinematics::Edge::PEPTIDE );
 
-            count = count +2;
+            count++;
         }
 
         //Making the end
@@ -135,15 +148,24 @@ public:
         core::Size loop_end = node_end.first -1;
         core::Size loop_center = (loop_start + loop_end)/2;
 
-        ft.add_edge( center, loop_center, count+1 );
+        std::cout << "New jump " << center << " " << loop_center << " " << count << std::endl;
+        std::cout << "New edge " << loop_center << " " << loop_start << std::endl;
+        std::cout << "New edge " << loop_center << " " << loop_end << std::endl;
+        ft.add_edge( center, loop_center, count );
         ft.add_edge( loop_center, loop_start, core::kinematics::Edge::PEPTIDE );
         ft.add_edge( loop_center, loop_end, core::kinematics::Edge::PEPTIDE );
+        count++;
 
         core::Size center_end = (node_end.first + node_end.second)/2;
-        ft.add_edge( center, center_end, count+2 );
+        std::cout << "New jump " << center << " " << center_end << " " << count << std::endl;
+        std::cout << "New edge " << center_end << " " << node_end.first << std::endl;
+        std::cout << "New edge " << center_end << " " << input_string.size() << std::endl;
+        ft.add_edge( center, center_end, count );
         ft.add_edge( center_end, node_end.first, core::kinematics::Edge::PEPTIDE );
         //Need to get last element
         ft.add_edge( center_end, input_string.size(), core::kinematics::Edge::PEPTIDE );
+
+        return ft;
     }
 
     core::kinematics::FoldTree fold_tree_from_ss(core::pose::Pose & pose) {
@@ -169,6 +191,20 @@ public:
 	void test_hello_world() {
 		TS_ASSERT( true );
 	}
+
+    void test_fold_tree_size() {
+        auto my_tree = fold_tree_from_dssp_string("   EEEEEEE    EEEEEEE         EEEEEEEEE    EEEEEEEEEE   HHHHHH         EEEEEEEEE         EEEEE     ");
+        std::cout << "Size " << my_tree.size() << std::endl;
+        TS_ASSERT( my_tree.size() == 38 );
+		}
+
+    void test_pdb_fold_tree() {
+        core::pose::Pose test_pose = create_test_in_pdb_pose();
+        auto my_tree = fold_tree_from_ss( test_pose );
+        //std::cout << "Size " << my_tree.size() << std::endl;
+        test_pose.fold_tree(my_tree);
+        TS_ASSERT( my_tree.check_fold_tree() );
+    }
 
     void test_empty() {
         TS_ASSERT( identify_secondary_structure_spans( "" ).size() == 0 );
