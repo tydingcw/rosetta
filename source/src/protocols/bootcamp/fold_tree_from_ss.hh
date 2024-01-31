@@ -12,9 +12,6 @@
 /// @author Andrew Leaver-Fay (aleaverfay@gmail.com)
 
 
-#include <test/util/pose_funcs.hh>
-#include <test/core/init_util.hh>
-
 // Utility headers
 #include <core/kinematics/FoldTree.hh>
 
@@ -28,11 +25,17 @@
 #include <string>
 #include <iostream>
 
+namespace protocols{
+namespace bootcamp{
+
 utility::vector1< std::pair< core::Size, core::Size > >
-identify_secondary_structure_spans( std::string const & ss_string ){}
+identify_secondary_structure_spans( std::string const & ss_string );
 
 core::kinematics::FoldTree fold_tree_from_dssp_string(
         std::string input_string
-) {}
+) ;
 
-core::kinematics::FoldTree fold_tree_from_ss(core::pose::Pose & pose) {}
+core::kinematics::FoldTree fold_tree_from_ss(core::pose::Pose & pose);
+
+}
+}
