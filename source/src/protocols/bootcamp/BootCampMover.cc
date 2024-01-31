@@ -24,10 +24,10 @@
 #include <utility/pointer/memory.hh>
 #include <iostream>
 #include <basic/options/keys/in.OptionKeys.gen.hh>
-#include <devel/init.hh>
+//#include <devel/init.hh>
 #include <basic/options/option.hh>
-#include <utility/pointer/owning_ptr.hh>
-#include <core/pose/Pose.hh>
+//#include <utility/pointer/owning_ptr.hh>
+//#include <core/pose/Pose.hh>
 #include <core/import_pose/import_pose.hh>
 #include <core/scoring/ScoreFunctionFactory.hh>
 #include <core/scoring/ScoreFunction.hh>
@@ -81,7 +81,7 @@ BootCampMover::apply( core::pose::Pose& mypose){
 
   using namespace protocols::moves;
 
-  std::cout << "Hello World!" << std::endl;
+  //std::cout << "Hello World!" << std::endl;
 
   //devel::init( argc, argv );
   //utility::vector1< std::string > filenames = basic::options::option[ basic::options::OptionKeys::in::file::s ].value();
@@ -125,10 +125,11 @@ BootCampMover::apply( core::pose::Pose& mypose){
   core::kinematics::MoveMap mm;
   mm.set_bb( true );
   mm.set_chi( true );
-
   core::optimization::MinimizerOptions min_opts( "lbfgs_armijo_atol", 0.01, true );
-
   core::optimization::AtomTreeMinimizer atm;
+
+  core::pack::task::PackerTaskOP repack_task = core::pack::task::TaskFactory::create_packer_task( mypose );
+  repack_task->restrict_to_repacking();
 
   core::pose::Pose copy_pose;
 
@@ -149,8 +150,6 @@ BootCampMover::apply( core::pose::Pose& mypose){
       mypose.set_phi( randres, orig_phi + pert1 );
       mypose.set_psi( randres, orig_psi + pert2 );
 
-      core::pack::task::PackerTaskOP repack_task = core::pack::task::TaskFactory::create_packer_task( mypose );
-      repack_task->restrict_to_repacking();
       core::pack::pack_rotamers( mypose, *sfxn, repack_task );
 
       //atm.run( mypose, mm, *sfxn, min_opts );
