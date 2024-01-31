@@ -24,6 +24,9 @@
 // Utility headers
 #include <core/kinematics/FoldTree.hh>
 #include <protocols/moves/MoverFactory.hh>
+#include <basic/datacache/DataMap.hh>
+//#include <basic/resource_manager/ResourceManager.hh>
+#include <test/util/rosettascripts.hh>
 
 /// Project headers
 //#include <core/types.hh>
@@ -92,6 +95,21 @@ public:
         auto boot_mv = protocols::bootcamp::BootCampMover();
         boot_mv.set_sfxn(sfxn);
         TS_ASSERT( sfxn == boot_mv.get_sfxn() )
+    }
+
+    void test_xml_parse() {
+        auto boot_mv = protocols::bootcamp::BootCampMover();
+        //basic::resource_manager::ResourceManager rm;
+        std::string xml_file = "<BootCampMover niterations=\"1025\"/>";
+        //rm.read_resources_from_xml( "(unit test)", xml_file );
+        utility::tag::TagCOP tag = tagptr_from_string(xml_file);
+
+        basic::datacache::DataMap data;
+        core::scoring::ScoreFunctionOP sfxn = core::scoring::ScoreFunctionOP( new core::scoring::ScoreFunction );
+        data.add( "scorefxns" , "testing123", sfxn );
+        boot_mv.parse_my_tag(tag, data);
+        //TS_ASSERT( sfxn == boot_mv.get_sfxn() )
+        TS_ASSERT_EQUALS( sfxn, boot_mv.get_sfxn() );
     }
 
     void test_bootcampmover_factory() {
