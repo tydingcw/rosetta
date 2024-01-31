@@ -27,6 +27,8 @@
 #include <core/optimization/MinimizerOptions.hh>
 #include <core/optimization/AtomTreeMinimizer.hh>
 #include <core/pose/Pose.hh>
+#include <core/pose/variant_util.hh>
+#include  <protocols/bootcamp/fold_tree_from_ss.hh>
 
 int main( int argc, char ** argv ) {
 
@@ -47,6 +49,14 @@ int main( int argc, char ** argv ) {
 	core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
 	core::Real score = sfxn->score( *mypose );
 	std::cout << "Score: " << score << std::endl;
+
+    //chainbreak terms
+    sfxn->set_weight(core::scoring::linear_chainbreak, 1);
+    core::pose::correctly_add_cutpoint_variants(*mypose);
+
+    //modify foldtree
+    auto my_tree = protocols::bootcamp::fold_tree_from_ss( *mypose );
+    mypose->fold_tree(my_tree);
 
 	core::Size n_resi = mypose->size();
 
