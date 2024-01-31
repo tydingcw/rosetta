@@ -64,7 +64,8 @@ namespace bootcamp {
 BootCampMover::BootCampMover():
 	protocols::moves::Mover( BootCampMover::mover_name() )
 {
-
+    num_iterations_ = 100;
+    sfxn_ = core::scoring::get_score_function();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,7 +76,24 @@ BootCampMover::~BootCampMover(){}
 	/// Mover Methods ///
 	/////////////////////
 
-/// @brief Apply the mover
+//getter and setter for sfxn and num_iterations_
+//core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
+void BootCampMover::set_sfxn(core::scoring::ScoreFunctionOP sfxn) {
+    sfxn_ = sfxn;
+};
+
+core::scoring::ScoreFunctionOP BootCampMover::get_sfxn() const {
+    return sfxn_;
+};
+
+void BootCampMover::set_num_iterations(core::Real num_iterations) {
+    num_iterations_ = num_iterations;
+};
+core::Size BootCampMover::get_num_iterations() const{
+    return num_iterations_;
+}; //function is const
+
+        /// @brief Apply the mover
 void
 BootCampMover::apply( core::pose::Pose& mypose){
 
@@ -93,8 +111,8 @@ BootCampMover::apply( core::pose::Pose& mypose){
   //}
 
   //core::pose::PoseOP mypose = core::import_pose::pose_from_file( filenames[1] );
-  core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
-  core::Real score = sfxn->score( mypose );
+  //core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
+  core::Real score = sfxn_->score( mypose );
   std::cout << "Score: " << score << std::endl;
 
   //modify foldtree
@@ -102,7 +120,7 @@ BootCampMover::apply( core::pose::Pose& mypose){
   mypose.fold_tree(my_tree);
 
   //chainbreak terms
-  sfxn->set_weight(core::scoring::linear_chainbreak, 1);
+  sfxn_->set_weight(core::scoring::linear_chainbreak, 1);
   core::pose::correctly_add_cutpoint_variants(mypose);
 
   core::Size n_resi = mypose.size();
@@ -117,7 +135,7 @@ BootCampMover::apply( core::pose::Pose& mypose){
   //std::cout << randres << " randres"  << std::endl;
 
 
-  MonteCarlo monte_carlo = MonteCarlo(mypose, *sfxn, 0.6);
+  MonteCarlo monte_carlo = MonteCarlo(mypose, *sfxn_, 0.6);
 
   //protocols::moves::PyMOLObserverOP the_observer = protocols::moves::AddPyMOLObserver( mypose, true, 0 );
   //the_observer->pymol().apply( mypose);
@@ -139,7 +157,7 @@ BootCampMover::apply( core::pose::Pose& mypose){
   core::Real sum_scores = 0.0;
   core::Real avg_score;
 
-  for (int i = 1; i <= 100; i++){
+  for (core::Size i = 1; i <= num_iterations_; i++){
 
       core::Size randres = n_resi * uni + 1;
       core::Real pert1 = numeric::random::gaussian();
@@ -150,12 +168,12 @@ BootCampMover::apply( core::pose::Pose& mypose){
       mypose.set_phi( randres, orig_phi + pert1 );
       mypose.set_psi( randres, orig_psi + pert2 );
 
-      core::pack::pack_rotamers( mypose, *sfxn, repack_task );
+      core::pack::pack_rotamers( mypose, *sfxn_, repack_task );
 
       //atm.run( mypose, mm, *sfxn, min_opts );
 
       copy_pose = mypose;
-      atm.run( copy_pose, mm, *sfxn, min_opts );
+      atm.run( copy_pose, mm, *sfxn_, min_opts );
       mypose = copy_pose;
 
       //Record Acceptance ratio and score
@@ -163,7 +181,7 @@ BootCampMover::apply( core::pose::Pose& mypose){
       if (accept) {
           accept_count++;
       }
-      score = sfxn->score( mypose );
+      score = sfxn_->score( mypose );
       sum_scores += score;
       //Acceptance Ratio at Step 100: 0.81
       //Average Score at Step 100: -246.001

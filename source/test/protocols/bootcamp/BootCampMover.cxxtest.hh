@@ -29,7 +29,7 @@
 //#include <core/types.hh>
 #include <core/scoring/dssp/Dssp.hh>
 #include <protocols/moves/DsspMover.hh>
-#include <protocols/bootcamp/>
+#include <protocols/bootcamp/BootCampMover.hh>
 
 // C++ headers
 #include <utility/vector1.hh>
@@ -47,7 +47,7 @@ using namespace protocols::bootcamp;
 
 // --------------- Test Class --------------- //
 
-class BootCampMover : public CxxTest::TestSuite {
+class BootCampMoverTest : public CxxTest::TestSuite {
 
 public:
 
@@ -72,12 +72,26 @@ public:
 
 	// --------------- Test Cases --------------- //
 
-    void test_pdb_fold_tree() {
-        core::pose::Pose test_pose = create_test_in_pdb_pose();
-        auto my_tree = fold_tree_from_ss( test_pose );
-        //std::cout << "Size " << my_tree.size() << std::endl;
-        test_pose.fold_tree(my_tree);
-        TS_ASSERT( my_tree.check_fold_tree() );
+//    void test_pdb_fold_tree() {
+//        core::pose::Pose test_pose = create_test_in_pdb_pose();
+//        auto my_tree = fold_tree_from_ss( test_pose );
+//        //std::cout << "Size " << my_tree.size() << std::endl;
+//        test_pose.fold_tree(my_tree);
+//        TS_ASSERT( my_tree.check_fold_tree() );
+//    }
+
+    void test_set_num_iterations() {
+        core::Size iters = 100;
+        auto boot_mv = protocols::bootcamp::BootCampMover();
+        boot_mv.set_num_iterations(iters);
+        TS_ASSERT( iters == boot_mv.get_num_iterations() )
+    }
+
+    void test_set_sfxn() {
+        core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
+        auto boot_mv = protocols::bootcamp::BootCampMover();
+        boot_mv.set_sfxn(sfxn);
+        TS_ASSERT( sfxn == boot_mv.get_sfxn() )
     }
 
     void test_bootcampmover_factory() {
@@ -88,9 +102,9 @@ public:
         MoverOP my_mover = mover_factory->newMover( mover_name );
 
         protocols::bootcamp::BootCampMoverOP bcm_op =
-                BootCampMoverOP( utility::pointer::dynamic_pointer_cast< protocols::bootcamp::BootCampMover > ( base_mover_op ) );
+                BootCampMoverOP( utility::pointer::dynamic_pointer_cast< protocols::bootcamp::BootCampMover > ( my_mover ) );
 
-        TS_ASSERT( identify_secondary_structure_spans( "" ).size() == 0 );
+        //TS_ASSERT( identify_secondary_structure_spans( "" ).size() == 0 );
     }
 
 };

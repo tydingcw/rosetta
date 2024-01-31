@@ -23,6 +23,8 @@
 
 // Core headers
 #include <core/pose/Pose.fwd.hh>
+#include <core/scoring/ScoreFunctionFactory.hh>
+#include <core/scoring/ScoreFunction.hh>
 
 // Basic/Utility headers
 #include <basic/datacache/DataMap.fwd.hh>
@@ -55,6 +57,13 @@ public:
 	/// Mover Methods ///
 	/////////////////////
 
+    //getter and setter for sfxn and num_iterations_
+    //core::scoring::ScoreFunctionOP sfxn = core::scoring::get_score_function();
+    void set_sfxn(core::scoring::ScoreFunctionOP sfxn);
+    core::scoring::ScoreFunctionOP get_sfxn() const;
+
+    void set_num_iterations(core::Real num_iterations);
+    core::Size get_num_iterations() const; //function is const
 
 	/// @brief Apply the mover
 	void
@@ -105,7 +114,8 @@ public: //Function overrides needed for the citation manager:
 private: // methods
 
 private: // data
-
+    core::scoring::ScoreFunctionOP sfxn_;
+    core::Size num_iterations_;
 };
 
 std::ostream &
