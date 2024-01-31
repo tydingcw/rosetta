@@ -14,7 +14,6 @@
 #include <utility/pointer/owning_ptr.hh>
 #include <core/pose/Pose.hh>
 #include <core/import_pose/import_pose.hh>
-#include <core/scoring/ScoreFunction.fwd.hh>
 #include <core/scoring/ScoreFunctionFactory.hh>
 #include <core/scoring/ScoreFunction.hh>
 #include <numeric/random/random.hh>
@@ -26,7 +25,6 @@
 #include <core/kinematics/MoveMap.hh>
 #include <core/optimization/MinimizerOptions.hh>
 #include <core/optimization/AtomTreeMinimizer.hh>
-#include <core/pose/Pose.hh>
 #include <core/pose/variant_util.hh>
 #include  <protocols/bootcamp/fold_tree_from_ss.hh>
 
