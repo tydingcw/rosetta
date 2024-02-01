@@ -107,6 +107,7 @@ public:
         basic::datacache::DataMap data;
         core::scoring::ScoreFunctionOP sfxn = core::scoring::ScoreFunctionOP( new core::scoring::ScoreFunction );
         data.add( "scorefxns" , "testing123", sfxn );
+        prime_Data( data );
         boot_mv.parse_my_tag(tag, data);
         //TS_ASSERT( sfxn == boot_mv.get_sfxn() )
         TS_ASSERT_EQUALS( sfxn, boot_mv.get_sfxn() );

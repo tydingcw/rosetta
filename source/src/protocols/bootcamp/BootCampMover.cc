@@ -308,7 +308,18 @@ BootCampMoverCreator::keyname() const
 
 void BootCampMoverCreator::provide_xml_schema( utility::tag::XMLSchemaDefinition & xsd ) const
 {
-	BootCampMover::provide_xml_schema( xsd );
+	BootCampMover::provide_xml_schema( xsd ) {
+        using namespace utility::tag;
+        AttributeList attlist;
+        attlist
+        + XMLSchemaAttribute(
+                "niterations", xsct_non_negative_integer,
+                "Numer of iterations for Monte Carlo Sampling" );
+        rosetta_scripts::attributes_for_parse_score_function(
+                attlist,
+                "Use your favorite score function");
+
+    }
 }
 
 /// @brief This mover is unpublished.  It returns tydingcw as its author.
