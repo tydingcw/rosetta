@@ -12,7 +12,7 @@
 /// @author Andrew Leaver-Fay (aleaverfay@gmail.com)
 
 
-#include <protocols/bootcamp/fold_tree_from_ss.hh>
+#include <protocols/bootcamp/FoldTreeFromSS.hh>
 
 // Utility headers
 #include <core/kinematics/FoldTree.hh>
