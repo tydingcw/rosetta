@@ -1,0 +1,14 @@
+<ROSETTASCRIPTS>
+	<RESIDUE_SELECTORS>
+	</RESIDUE_SELECTORS>
+	<TASKOPERATIONS>
+	</TASKOPERATIONS>
+	<FILTERS>
+	</FILTERS>
+	<MOVERS>
+		<BootCampMover name="boot" num_iterations="200" />
+	</MOVERS>
+	<PROTOCOLS>
+		<Add mover="boot" />
+	</PROTOCOLS>
+</ROSETTASCRIPTS>
