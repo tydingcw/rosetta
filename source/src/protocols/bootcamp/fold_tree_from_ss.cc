@@ -74,8 +74,50 @@ core::kinematics::FoldTree fold_tree_from_dssp_string(
     //core::Size edges = 4*(input_vect.size()-2);
     //core::Size jumps = 2*(input_vect.size()-2);
 
+    utility::vector1< std::pair< core::Size, core::Size > > ss_stretch;
+    core::Size prior_end = input_vect[1].second;
+    ss_stretch.push_back( std::make_pair( 1, prior_end));
+    for (size_t i = 2; i <= input_vect.size() - 1; i++){
+        core::Size curr_start = input_vect[i].first;
+        core::Size curr_end = input_vect[i].second;
+        if (curr_end - curr_start >=3){ //if not true, deal with this later
+            if (curr_start - prior_end >= 5){ //Looking at size 3 (start-1, end+1)
+                ss_stretch.push_back( std::make_pair( prior_end+1, curr_start-1) );
+                ss_stretch.push_back( std::make_pair( curr_start, curr_end) );
+                prior_end = curr_end;
+            } else {
+               //prior loop not of adequete size
+                ss_stretch.push_back( std::make_pair( prior_end+1, curr_end) );
+                prior_end = curr_end;
+            }
+        } else {
+            std::cout << "Warning: did not expect to be here" << std::endl;
+        }
+    }
+    //Now need to deal with the last one (input_string.size())
+    core::Size final_start = input_vect[input_vect.size()].first;
+    core::Size final_end = input_string.size();
+    if (final_end - final_start >=3){ //if not true, deal with this later
+        if (final_start - prior_end >= 5){ //Looking at size 3 (start-1, end+1)
+            ss_stretch.push_back( std::make_pair( prior_end+1, final_start-1) );
+            ss_stretch.push_back( std::make_pair( final_start, final_end) );
+            //prior_end = curr_end;
+        } else {
+            //prior loop not of adequete size
+            ss_stretch.push_back( std::make_pair( prior_end+1, final_end) );
+            //prior_end = curr_end;
+        }
+    } else {
+        std::cout << "Error: did not expect to be here (final)" << std::endl;
+    }
+
+    std::cout << "Size: " << final_end << std::endl;
+    for (size_t i = 1; i <= ss_stretch.size(); i++){
+        std::cout << "pair " << ss_stretch[i].first << " " << ss_stretch[i].second << std::endl;
+    }
+
     //Making the start
-    std::pair< core::Size, core::Size > node1 = input_vect[1];
+    std::pair< core::Size, core::Size > node1 = ss_stretch[1];
     core::Size center = (node1.first + node1.second)/2;
     std::cout << "New edge " << center << " " << 1 << std::endl;
     std::cout << "New edge " << center << " " << node1.second << std::endl;
@@ -84,25 +126,25 @@ core::kinematics::FoldTree fold_tree_from_dssp_string(
 
     core::Size count = 1;
     //Creating the foldtree for given SS and previous loop
-    for (size_t i = 2; i <= input_vect.size() - 1; i++){
+    for (size_t i = 2; i <= ss_stretch.size(); i++){
         //assuming loop size 3+ between SS elements
         std::cout << "starting " << i << std::endl;
-        std::pair< core::Size, core::Size > node_i = input_vect[i];
+        std::pair< core::Size, core::Size > node_i = ss_stretch[i];
         core::Size center_i = (node_i.first + node_i.second)/2;
 
-        std::pair< core::Size, core::Size > node_prev = input_vect[i-1];
-        core::Size loop_start = node_prev.second + 1; //prev node is SS, need loop
-        core::Size loop_end = node_i.first -1;
-        core::Size loop_center = (loop_start + loop_end)/2;
+        //std::pair< core::Size, core::Size > node_prev = input_vect[i-1];
+        //core::Size loop_start = node_prev.second + 1; //prev node is SS, need loop
+        //core::Size loop_end = node_i.first -1;
+        //core::Size loop_center = (loop_start + loop_end)/2;
 
-        std::cout << "New jump " << center << " " << loop_center << " " << count << std::endl;
-        std::cout << "New edge " << loop_center << " " << loop_start << std::endl;
-        std::cout << "New edge " << loop_center << " " << loop_end << std::endl;
-        ft.add_edge( center, loop_center, count );
-        ft.add_edge( loop_center, loop_start, core::kinematics::Edge::PEPTIDE );
-        ft.add_edge( loop_center, loop_end, core::kinematics::Edge::PEPTIDE );
+        //std::cout << "New jump " << center << " " << loop_center << " " << count << std::endl;
+        //std::cout << "New edge " << loop_center << " " << loop_start << std::endl;
+        //std::cout << "New edge " << loop_center << " " << loop_end << std::endl;
+        //ft.add_edge( center, loop_center, count );
+        //ft.add_edge( loop_center, loop_start, core::kinematics::Edge::PEPTIDE );
+        //ft.add_edge( loop_center, loop_end, core::kinematics::Edge::PEPTIDE );
 
-        count++;
+        //count++;
 
         std::cout << "New jump " << center << " " << center_i << " " << count << std::endl;
         std::cout << "New edge " << center_i << " " << node_i.first << std::endl;
@@ -115,29 +157,29 @@ core::kinematics::FoldTree fold_tree_from_dssp_string(
     }
 
     //Making the end
-    std::pair< core::Size, core::Size > node_end = input_vect[input_vect.size()];
-
-    std::pair< core::Size, core::Size > node_prev = input_vect[input_vect.size()-1];
-    core::Size loop_start = node_prev.second + 1; //prev node is SS, need loop
-    core::Size loop_end = node_end.first -1;
-    core::Size loop_center = (loop_start + loop_end)/2;
-
-    std::cout << "New jump " << center << " " << loop_center << " " << count << std::endl;
-    std::cout << "New edge " << loop_center << " " << loop_start << std::endl;
-    std::cout << "New edge " << loop_center << " " << loop_end << std::endl;
-    ft.add_edge( center, loop_center, count );
-    ft.add_edge( loop_center, loop_start, core::kinematics::Edge::PEPTIDE );
-    ft.add_edge( loop_center, loop_end, core::kinematics::Edge::PEPTIDE );
-    count++;
-
-    core::Size center_end = (node_end.first + node_end.second)/2;
-    std::cout << "New jump " << center << " " << center_end << " " << count << std::endl;
-    std::cout << "New edge " << center_end << " " << node_end.first << std::endl;
-    std::cout << "New edge " << center_end << " " << input_string.size() << std::endl;
-    ft.add_edge( center, center_end, count );
-    ft.add_edge( center_end, node_end.first, core::kinematics::Edge::PEPTIDE );
-    //Need to get last element
-    ft.add_edge( center_end, input_string.size(), core::kinematics::Edge::PEPTIDE );
+//    std::pair< core::Size, core::Size > node_end = input_vect[input_vect.size()];
+//
+//    std::pair< core::Size, core::Size > node_prev = input_vect[input_vect.size()-1];
+//    core::Size loop_start = node_prev.second + 1; //prev node is SS, need loop
+//    core::Size loop_end = node_end.first -1;
+//    core::Size loop_center = (loop_start + loop_end)/2;
+//
+//    std::cout << "New jump " << center << " " << loop_center << " " << count << std::endl;
+//    std::cout << "New edge " << loop_center << " " << loop_start << std::endl;
+//    std::cout << "New edge " << loop_center << " " << loop_end << std::endl;
+//    ft.add_edge( center, loop_center, count );
+//    ft.add_edge( loop_center, loop_start, core::kinematics::Edge::PEPTIDE );
+//    ft.add_edge( loop_center, loop_end, core::kinematics::Edge::PEPTIDE );
+//    count++;
+//
+//    core::Size center_end = (node_end.first + node_end.second)/2;
+//    std::cout << "New jump " << center << " " << center_end << " " << count << std::endl;
+//    std::cout << "New edge " << center_end << " " << node_end.first << std::endl;
+//    std::cout << "New edge " << center_end << " " << input_string.size() << std::endl;
+//    ft.add_edge( center, center_end, count );
+//    ft.add_edge( center_end, node_end.first, core::kinematics::Edge::PEPTIDE );
+//    //Need to get last element
+//    ft.add_edge( center_end, input_string.size(), core::kinematics::Edge::PEPTIDE );
 
     return ft;
 }
