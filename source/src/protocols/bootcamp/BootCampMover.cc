@@ -43,6 +43,7 @@
 #include <core/optimization/AtomTreeMinimizer.hh>
 #include <core/pose/variant_util.hh>
 #include  <protocols/bootcamp/FoldTreeFromSS.hh>
+#include <protocols/loops/loop_closure/ccd/CCDLoopClosureMover.hh>
 
 // XSD Includes
 #include <utility/tag/XMLSchemaGeneration.hh>
@@ -70,11 +71,11 @@ BootCampMover::BootCampMover():
 }
 
 /// @brief Copy constructor
-BootCampMover::BootCampMover( BootCampMover const & src ):
-        protocols::moves::Mover( src )
-{
-
-}
+//BootCampMover::BootCampMover( BootCampMover const & src ) :
+//    //sfxn_(src.sfxn_),
+//    //num_iterations_(src.num_iterations_)
+//    protocols::moves::Mover( src )
+//{}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Destructor (important for properly forward-declaring smart-pointer members)
@@ -126,7 +127,7 @@ BootCampMover::apply( core::pose::Pose& mypose){
   //modify foldtree
   //auto my_tree = protocols::bootcamp::fold_tree_from_ss( mypose );
   auto my_tree = protocols::bootcamp::FoldTreeFromSS( mypose );
-  mypose.fold_tree(my_tree);
+  mypose.fold_tree(my_tree.fold_tree());
 
   //chainbreak terms
   sfxn_->set_weight(core::scoring::linear_chainbreak, 1);
@@ -149,9 +150,10 @@ BootCampMover::apply( core::pose::Pose& mypose){
   //protocols::moves::PyMOLObserverOP the_observer = protocols::moves::AddPyMOLObserver( mypose, true, 0 );
   //the_observer->pymol().apply( mypose);
 
-  core::kinematics::MoveMap mm;
-  mm.set_bb( true );
-  mm.set_chi( true );
+  core::kinematics::MoveMapOP mm ( new core::kinematics::MoveMap() );
+  //core::kinematics::MoveMap mm;
+  mm->set_bb( true );
+  mm->set_chi( true );
   core::optimization::MinimizerOptions min_opts( "lbfgs_armijo_atol", 0.01, true );
   core::optimization::AtomTreeMinimizer atm;
 
@@ -177,12 +179,27 @@ BootCampMover::apply( core::pose::Pose& mypose){
       mypose.set_phi( randres, orig_phi + pert1 );
       mypose.set_psi( randres, orig_psi + pert2 );
 
+      //Loop closure if needed
+      if ( my_tree.loop_for_residue( randres ) != 0 ) {
+
+          protocols::loops::Loop ranloop = my_tree.loop( my_tree.loop_for_residue( randres ));
+
+          std::cout << "Closing loop: " << ranloop.start()  << " " << ranloop.stop()
+                    << " " << ranloop.cut() << std::endl;
+
+          protocols::loops::loop_closure::ccd::CCDLoopClosureMover ccd(
+                  ranloop,  mm  );
+          ccd.apply( mypose );
+      }
+
+
       core::pack::pack_rotamers( mypose, *sfxn_, repack_task );
 
       //atm.run( mypose, mm, *sfxn, min_opts );
 
+      //minimization
       copy_pose = mypose;
-      atm.run( copy_pose, mm, *sfxn_, min_opts );
+      atm.run( copy_pose, *mm, *sfxn_, min_opts );
       mypose = copy_pose;
 
       //Record Acceptance ratio and score

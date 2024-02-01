@@ -28,7 +28,7 @@
 //#include <core/types.hh>
 #include <core/scoring/dssp/Dssp.hh>
 #include <protocols/moves/DsspMover.hh>
-#include <protocols/bootcamp/fold_tree_from_ss.hh>
+#include <protocols/bootcamp/FoldTreeFromSS.hh>
 
 // C++ headers
 #include <utility/vector1.hh>
@@ -194,17 +194,19 @@ public:
 	}
 
     void test_fold_tree_size() {
-        auto my_tree = fold_tree_from_dssp_string("   EEEEEEE    EEEEEEE         EEEEEEEEE    EEEEEEEEEE   HHHHHH         EEEEEEEEE         EEEEE     ");
-        std::cout << "Size " << my_tree.size() << std::endl;
-        TS_ASSERT( my_tree.size() == 38 );
+        auto my_tree = protocols::bootcamp::FoldTreeFromSS("   EEEEEEE    EEEEEEE         EEEEEEEEE    EEEEEEEEEE   HHHHHH         EEEEEEEEE         EEEEE     ");
+        //fold_tree_from_dssp_string("   EEEEEEE    EEEEEEE         EEEEEEEEE    EEEEEEEEEE   HHHHHH         EEEEEEEEE         EEEEE     ");
+        std::cout << "Size " << my_tree.fold_tree().size() << std::endl;
+        TS_ASSERT( my_tree.fold_tree().size() == 38 );
 		}
 
     void test_pdb_fold_tree() {
         core::pose::Pose test_pose = create_test_in_pdb_pose();
-        auto my_tree = fold_tree_from_ss( test_pose );
+        auto my_tree = protocols::bootcamp::FoldTreeFromSS(test_pose);
+        //fold_tree_from_ss( test_pose );
         //std::cout << "Size " << my_tree.size() << std::endl;
-        test_pose.fold_tree(my_tree);
-        TS_ASSERT( my_tree.check_fold_tree() );
+        test_pose.fold_tree(my_tree.fold_tree());
+        TS_ASSERT( my_tree.fold_tree().check_fold_tree() );
     }
 
     void test_empty() {

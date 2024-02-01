@@ -85,8 +85,10 @@ public:
 		utility::tag::TagCOP tag,
 		basic::datacache::DataMap & data ) override;
 
-    /// @brief Copy constructor
-	BootCampMover & operator=( BootCampMover const & src );
+    /// Addignment Operatior
+	//BootCampMover & operator=( BootCampMover const & src );
+
+    //Using default copy constructor
 
     void
     parse_score_function(
@@ -122,7 +124,7 @@ private: // methods
 
 private: // data
     core::scoring::ScoreFunctionOP sfxn_;
-    core::Size num_iterations_;
+    core::Size num_iterations_{};
 };
 
 std::ostream &
