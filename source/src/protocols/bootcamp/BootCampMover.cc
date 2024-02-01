@@ -255,6 +255,13 @@ BootCampMover::parse_score_function(
 //    task_factory_ = tf;
 //}
 
+//        void
+//        BootCampMover::provide_xml_schema( utility::tag::XMLSchemaDefinition & xsd ) {
+//            using namespace utility::tag;
+//            AttributeList attlist;
+//
+//        }
+
 void BootCampMover::provide_xml_schema( utility::tag::XMLSchemaDefinition & xsd )
 {
 
@@ -262,6 +269,13 @@ void BootCampMover::provide_xml_schema( utility::tag::XMLSchemaDefinition & xsd 
 	AttributeList attlist;
 
 	//here you should write code to describe the XML Schema for the class.  If it has only attributes, simply fill the probided AttributeList.
+    attlist
+    + XMLSchemaAttribute(
+            "num_iterations", xsct_non_negative_integer,
+            "Number of iterations for Monte Carlo Sampling" );
+    rosetta_scripts::attributes_for_parse_score_function_w_description(
+            attlist,
+            "Use your fav score fxn");
 
 	protocols::moves::xsd_type_definition_w_attributes( xsd, mover_name(), "The Bootcamp Mover", attlist );
 }
@@ -308,18 +322,7 @@ BootCampMoverCreator::keyname() const
 
 void BootCampMoverCreator::provide_xml_schema( utility::tag::XMLSchemaDefinition & xsd ) const
 {
-	BootCampMover::provide_xml_schema( xsd ) {
-        using namespace utility::tag;
-        AttributeList attlist;
-        attlist
-        + XMLSchemaAttribute(
-                "niterations", xsct_non_negative_integer,
-                "Numer of iterations for Monte Carlo Sampling" );
-        rosetta_scripts::attributes_for_parse_score_function(
-                attlist,
-                "Use your favorite score function");
-
-    }
+   BootCampMover::provide_xml_schema( xsd );
 }
 
 /// @brief This mover is unpublished.  It returns tydingcw as its author.
