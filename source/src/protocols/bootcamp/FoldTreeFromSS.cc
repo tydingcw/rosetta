@@ -30,6 +30,31 @@
 namespace protocols{
 namespace bootcamp{
 
+//Constructor to make ft from string
+FoldTreeFromSS::FoldTreeFromSS( std::string const & ss_string ){
+
+}
+
+//Constructor to make ft from pose
+FoldTreeFromSS::FoldTreeFromSS( core::pose::Pose & pose ){
+
+}
+
+core::kinematics::FoldTree const &
+FoldTreeFromSS::fold_tree() const{
+
+}
+
+protocols::loops::Loop const &
+FoldTreeFromSS::loop( core::Size index ) const{
+
+}
+
+core::Size
+FoldTreeFromSS::loop_for_residue( core::Size seqpos ) const{
+
+}
+
 utility::vector1< std::pair< core::Size, core::Size > >
 identify_secondary_structure_spans( std::string const & ss_string )
 {

@@ -14,6 +14,7 @@
 
 // Utility headers
 #include <core/kinematics/FoldTree.hh>
+#include <protocols/loops/Loop.hh>
 
 /// Project headers
 //#include <core/types.hh>
@@ -28,13 +29,39 @@
 namespace protocols{
 namespace bootcamp{
 
+    class FoldTreeFromSS {
+    public:
+        //Constructor to make ft from string
+        FoldTreeFromSS( std::string const & ss_string );
+
+        //Constructor to make ft from pose
+        FoldTreeFromSS( core::pose::Pose & pose );
+
+        core::kinematics::FoldTree const &
+        fold_tree() const;
+
+        protocols::loops::Loop const &
+        loop( core::Size index ) const;
+
+        core::Size
+        loop_for_residue( core::Size seqpos ) const;
+
+    private:
+        core::kinematics::FoldTree ft_;
+        utility::vector1< protocols::loops::Loop > loop_vector_;
+        utility::vector1< core::Size > loop_for_residue_;
+    };
+
+/// @brief generate spans of SS, returned as vector of pairs
 utility::vector1< std::pair< core::Size, core::Size > >
 identify_secondary_structure_spans( std::string const & ss_string );
 
+/// @brief generate a ft from a string, using secondary structure
 core::kinematics::FoldTree fold_tree_from_dssp_string(
         std::string input_string
 ) ;
 
+/// @brief generate a ft from a pose, using secondary structure
 core::kinematics::FoldTree fold_tree_from_ss(core::pose::Pose & pose);
 
 }

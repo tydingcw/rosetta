@@ -42,7 +42,7 @@
 #include <core/optimization/MinimizerOptions.hh>
 #include <core/optimization/AtomTreeMinimizer.hh>
 #include <core/pose/variant_util.hh>
-#include  <protocols/bootcamp/fold_tree_from_ss.hh>
+#include  <protocols/bootcamp/FoldTreeFromSS.hh>
 
 // XSD Includes
 #include <utility/tag/XMLSchemaGeneration.hh>
