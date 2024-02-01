@@ -69,6 +69,13 @@ BootCampMover::BootCampMover():
     sfxn_ = core::scoring::get_score_function();
 }
 
+/// @brief Copy constructor
+BootCampMover::BootCampMover( BootCampMover const & src ):
+        protocols::moves::Mover( src )
+{
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief Destructor (important for properly forward-declaring smart-pointer members)
 BootCampMover::~BootCampMover(){}

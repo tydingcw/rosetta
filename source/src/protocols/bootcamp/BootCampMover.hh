@@ -85,7 +85,8 @@ public:
 		utility::tag::TagCOP tag,
 		basic::datacache::DataMap & data ) override;
 
-	//BootCampMover & operator=( BootCampMover const & src );
+    /// @brief Copy constructor
+	BootCampMover & operator=( BootCampMover const & src );
 
     void
     parse_score_function(
