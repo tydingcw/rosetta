@@ -124,7 +124,8 @@ BootCampMover::apply( core::pose::Pose& mypose){
   std::cout << "Score: " << score << std::endl;
 
   //modify foldtree
-  auto my_tree = protocols::bootcamp::fold_tree_from_ss( mypose );
+  //auto my_tree = protocols::bootcamp::fold_tree_from_ss( mypose );
+  auto my_tree = protocols::bootcamp::FoldTreeFromSS( mypose );
   mypose.fold_tree(my_tree);
 
   //chainbreak terms

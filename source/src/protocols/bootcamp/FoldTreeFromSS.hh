@@ -46,6 +46,14 @@ namespace bootcamp{
         core::Size
         loop_for_residue( core::Size seqpos ) const;
 
+        /// @brief generate a ft from a string, using secondary structure
+        //core::kinematics::FoldTree fold_tree_from_dssp_string(std::string input_string) ;
+        void fold_tree_from_dssp_string(const std::string& input_string);
+
+        /// @brief generate a ft from a pose, using secondary structure
+        //core::kinematics::FoldTree fold_tree_from_ss(core::pose::Pose & pose);
+        void fold_tree_from_ss(core::pose::Pose & pose);
+
     private:
         core::kinematics::FoldTree ft_;
         utility::vector1< protocols::loops::Loop > loop_vector_;
@@ -55,14 +63,6 @@ namespace bootcamp{
 /// @brief generate spans of SS, returned as vector of pairs
 utility::vector1< std::pair< core::Size, core::Size > >
 identify_secondary_structure_spans( std::string const & ss_string );
-
-/// @brief generate a ft from a string, using secondary structure
-core::kinematics::FoldTree fold_tree_from_dssp_string(
-        std::string input_string
-) ;
-
-/// @brief generate a ft from a pose, using secondary structure
-core::kinematics::FoldTree fold_tree_from_ss(core::pose::Pose & pose);
 
 }
 }
